@@ -1,0 +1,51 @@
+from collections import deque
+
+class JugState:
+    def __init__(self, jug1, jug2):
+        self.jug1 = jug1
+        self.jug2 = jug2
+
+    def __repr__(self):
+        return f"({self.jug1}, {self.jug2})"
+
+    def is_goal(self, target):
+        return self.jug1 == target or self.jug2 == target
+
+    def pour(self, other, max_capacity):
+        amount_to_pour = min(self.jug1, max_capacity - other)
+        return JugState(self.jug1 - amount_to_pour, other + amount_to_pour)
+
+def water_jug_problem(capacity_jug1, capacity_jug2, target):
+    initial_state = JugState(0, 0)
+    visited_states = set()
+    queue = deque([(initial_state, [])])
+
+    while queue:
+        current_state, path = queue.popleft()
+
+        if current_state.is_goal(target):
+            print("Goal reached! Path:")
+            for state in path:
+                print(state)
+            print(current_state)
+            return
+
+        visited_states.add(current_state)
+
+        next_states = [
+            (current_state.pour(current_state.jug2, capacity_jug2), "Pour Jug 1 to Jug 2"),
+            (current_state.pour(current_state.jug1, capacity_jug1), "Pour Jug 2 to Jug 1"),
+            (JugState(capacity_jug1, current_state.jug2), "Fill Jug 1"),
+            (JugState(current_state.jug1, capacity_jug2), "Fill Jug 2"),
+            (JugState(0, current_state.jug2), "Empty Jug 1"),
+            (JugState(current_state.jug1, 0), "Empty Jug 2"),
+        ]
+
+        for next_state, action in next_states:
+            if next_state not in visited_states:
+                queue.append((next_state, path + [current_state]))
+
+    print("No solution found.")
+
+# Example usage:
+water_jug_problem(4, 3, 2)
